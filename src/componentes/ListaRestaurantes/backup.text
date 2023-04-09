@@ -1,0 +1,113 @@
+import axios from 'axios';
+import { useEffect, useState } from 'react';
+import IRestaurante from '../../interfaces/IRestaurante';
+import IPaginacao from '../../interfaces/IPaginacao';
+import style from './ListaRestaurantes.module.scss';
+import Restaurante from './Restaurante';
+
+const ListaRestaurantes = () => {
+
+  const [restaurantes, setRestaurantes] = useState<IRestaurante[]>([]);
+  const [proximaPagina, setProximaPagina] = useState('');
+  
+  useEffect(() => {
+    //Obter restaurantes
+    
+    //get permite eu coloque o tipo de resposta que eu vou voltar
+    axios.get<IPaginacao<IRestaurante>>('http://localhost:8000/api/v1/restaurantes/')
+    .then(resposta => {
+      setRestaurantes(resposta.data.results);
+      setProximaPagina(resposta.data.next);
+    })
+    .catch(erro => {
+      console.log(erro);
+    })
+  }, []);
+
+  const verMais = () => {
+    axios.get<IPaginacao<IRestaurante>>(proximaPagina)
+    .then(resposta => {
+      setRestaurantes([...restaurantes, ...resposta.data.results]);
+      setProximaPagina(resposta.data.next);
+    })
+    .catch(erro => {
+      console.log(erro);
+    })
+  }
+
+  return (<section className={style.ListaRestaurantes}>
+    <h1>Os restaurantes mais <em>bacanas</em>!</h1>
+    {restaurantes?.map(item => <Restaurante restaurante={item} key={item.id} />)}
+    {proximaPagina && <button onClick={verMais}>
+        Ver mais
+      </button>}
+  </section>)
+}
+
+export default ListaRestaurantes
+
+
+********  Backup 2 ********************
+***************************************
+
+
+import axios from 'axios';
+import { useEffect, useState } from 'react';
+import IRestaurante from '../../interfaces/IRestaurante';
+import IPaginacao from '../../interfaces/IPaginacao';
+import style from './ListaRestaurantes.module.scss';
+import Restaurante from './Restaurante';
+import { Button } from '@mui/material';
+
+const ListaRestaurantes = () => {
+
+  const [restaurantes, setRestaurantes] = useState<IRestaurante[]>([]);
+  const [proximaPagina, setProximaPagina] = useState('');
+  const [paginaAnterior, setPaginaAnterior] = useState('');
+
+  const carregarDados = (url: string) => {    
+    
+    //get permite eu coloque o tipo de resposta que eu vou voltar
+    axios.get<IPaginacao<IRestaurante>>(url)
+    .then(resposta => {
+      setRestaurantes(resposta.data.results);
+      setProximaPagina(resposta.data.next);
+      setPaginaAnterior(resposta.data.previous);
+    })
+    .catch(erro => {
+      console.log(erro);
+    })
+  }
+
+  useEffect(() => {
+    //Obter restaurantes
+    carregarDados('http://localhost:8000/api/v1/restaurantes/');
+    
+  }, []);
+
+  /*
+  const verMais = () => {
+    axios.get<IPaginacao<IRestaurante>>(proximaPagina)
+    .then(resposta => {
+      setRestaurantes([...restaurantes, ...resposta.data.results]);
+      setProximaPagina(resposta.data.next);
+    })
+    .catch(erro => {
+      console.log(erro);
+    })
+  } */
+
+  return (<section className={style.ListaRestaurantes}>
+    <h1>Os restaurantes mais <em>bacanas</em>!</h1>
+    {restaurantes?.map(item => <Restaurante restaurante={item} key={item.id} />)}
+    {proximaPagina && <Button variant="contained" onClick={() => carregarDados(proximaPagina)} disabled={!proximaPagina}>
+        Proxima Página
+      </Button>}
+    {paginaAnterior && <Button variant="contained" onClick={() => carregarDados(paginaAnterior)} disabled={!paginaAnterior}>
+        Pagina Anterior
+      </Button>}
+      
+  </section>)
+}
+
+export default ListaRestaurantes
