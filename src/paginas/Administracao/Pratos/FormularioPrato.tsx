@@ -64,37 +64,32 @@ const FormularioPrato = () => {
       formData.append('imagem', imagem);
     }
 
+    const url = parametros.id ? `pratos/${parametros.id}/` : 'pratos/';
+    const method = parametros.id ? 'PUT' : 'POST';
+    
     http.request({
-      url: 'pratos/',
-      method: 'POST',
+      url,
+      method,
       headers: {
         'Content-Type': 'multipart/form-data'
       },
       data: formData
     })
       .then(() => {
-        setNomePrato('');
-        setDescricao('');
-        setTag('');
-        setRestaurante(0);
-        setImagem(null);
-        alert('Prato cadastrado com sucesso!')
+        if (parametros.id) {
+          alert('Prato atualizado com sucesso!')
+        } else {
+          setNomePrato('');
+          setDescricao('');
+          setTag('');
+          setRestaurante(0);
+          setImagem(null);
+          alert('Prato cadastrado com sucesso!')
+        }        
       })
       .catch(erro => console.log(erro))
 
   };
-
-  useEffect(() => {
-    http.get< { tags: Itag[]}>('tags/')
-      .then(resposta => {
-        //console.log(resposta.data.tags)
-        setTags(resposta.data.tags)
-        //console.log('resposta e data');
-        //console.log(resposta.data);      
-      })
-    http.get<IRestaurante[]>('restaurantes/')
-      .then(resposta => setRestaurantes(resposta.data))  
-  }, [])
 
   return (
             
